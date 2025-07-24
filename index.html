@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -6,14 +7,14 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 600px;
+      max-width: 700px;
       margin: 40px auto;
       background-color: #f2f2f2;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-    h2 {
+    h2, h3 {
       text-align: center;
       color: #014421;
     }
@@ -55,6 +56,11 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
+    .formula {
+      display: block;
+      margin: 0 auto 20px auto;
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -67,14 +73,45 @@
   <label>ICMS Origem (R$):</label>
   <input type="number" step="0.01" id="icms_origem" placeholder="Ex: 200.00">
 
-  <label>Alíquota Interna (%):</label>
-  <input type="number" step="0.01" id="aliq_interna" placeholder="Ex: 18">
-
-  <label>Alíquota Interestadual (%):</label>
-  <select id="aliq_inter">
-    <option value="0.04">4%</option>
-    <option value="0.07" selected>7%</option>
+  <label>Alíquota Interna no Amapá (%):</label>
+  <select id="aliq_interna">
+    <option value="0.29">29%</option>
+    <option value="0.25">25%</option>
+    <option value="0.18" selected>18%</option>
+    <option value="0.17">17%</option>
     <option value="0.12">12%</option>
+	<option value="0.04">4%</option>
+  </select>
+
+  <label>Estado de Origem:</label>
+  <select id="estado_origem">
+    <option value="AC">Acre (AC)</option>
+    <option value="AL">Alagoas (AL)</option>
+    <option value="AP">Amapá (AP)</option>
+    <option value="AM">Amazonas (AM)</option>
+    <option value="BA">Bahia (BA)</option>
+    <option value="CE">Ceará (CE)</option>
+    <option value="DF">Distrito Federal (DF)</option>
+    <option value="ES">Espírito Santo (ES)</option>
+    <option value="GO">Goiás (GO)</option>
+    <option value="MA">Maranhão (MA)</option>
+    <option value="MT">Mato Grosso (MT)</option>
+    <option value="MS">Mato Grosso do Sul (MS)</option>
+    <option value="MG">Minas Gerais (MG)</option>
+    <option value="PA">Pará (PA)</option>
+    <option value="PB">Paraíba (PB)</option>
+    <option value="PR">Paraná (PR)</option>
+    <option value="PE">Pernambuco (PE)</option>
+    <option value="PI">Piauí (PI)</option>
+    <option value="RJ">Rio de Janeiro (RJ)</option>
+    <option value="RN">Rio Grande do Norte (RN)</option>
+    <option value="RS">Rio Grande do Sul (RS)</option>
+    <option value="RO">Rondônia (RO)</option>
+    <option value="RR">Roraima (RR)</option>
+    <option value="SC">Santa Catarina (SC)</option>
+    <option value="SP">São Paulo (SP)</option>
+    <option value="SE">Sergipe (SE)</option>
+    <option value="TO">Tocantins (TO)</option>
   </select>
 
   <button onclick="calcular()">Calcular DIFAL</button>
@@ -85,29 +122,46 @@
     function calcular() {
       const vOper = parseFloat(document.getElementById('total_nota').value);
       const icmsOrigem = parseFloat(document.getElementById('icms_origem').value);
-      const aliqInt = parseFloat(document.getElementById('aliq_interna').value) / 100;
-      const aliqInter = parseFloat(document.getElementById('aliq_inter').value);
+      const aliqInt = parseFloat(document.getElementById('aliq_interna').value);
+      const estadoOrigem = document.getElementById('estado_origem').value;
+      const sulSudesteExcetoES = ['SP', 'RJ', 'MG', 'PR', 'SC', 'RS'];
+      const aliqInter = sulSudesteExcetoES.includes(estadoOrigem) ? 0.07 : 0.12;
 
       if (
         isNaN(vOper) || vOper <= 0 ||
         isNaN(icmsOrigem) || icmsOrigem < 0 ||
-        isNaN(aliqInt) || aliqInt <= 0 ||
-        isNaN(aliqInter) || aliqInter <= 0
+        isNaN(aliqInt) || aliqInt <= 0
       ) {
         alert('⚠️ Preencha todos os campos com valores válidos acima de zero.');
         return;
       }
 
-      const difal = ((vOper - icmsOrigem) / (1 - aliqInt)) * aliqInt - (vOper * aliqInter);
+      const baseICMS = (vOper - icmsOrigem) / (1 - aliqInt);
+      const icmsInterno = baseICMS * aliqInt;
+      const icmsInter = vOper * aliqInter;
+      const difal = icmsInterno - icmsInter;
 
-      let resultado = `*** Memória de Cálculo ***\n\n`;
-      resultado += `Valor da Operação:       R$ ${vOper.toFixed(2)}\n`;
-      resultado += `ICMS Origem:             R$ ${icmsOrigem.toFixed(2)}\n`;
-      resultado += `Alíquota Interna:        ${(aliqInt * 100).toFixed(2)}%\n`;
-      resultado += `Alíquota Interestadual:  ${(aliqInter * 100).toFixed(2)}%\n\n`;
-      resultado += `DIFAL Calculado:         R$ ${difal.toFixed(2)}\n`;
+      let resultado = `*** MEMÓRIA DE CÁLCULO DO DIFAL ***\n\n`;
+      resultado += `Fórmula Aplicada:\n`;
+      resultado += `DIFAL = [(vOper - ICMS_Origem) / (1 - ALQ_Interna)] × ALQ_Interna - (vOper × ALQ_Interestadual)\n\n`;
 
-      document.getElementById('resultado').innerText = resultado;
+      resultado += `A) Valor da Operação (vOper):              R$ ${vOper.toFixed(2)}\n`;
+      resultado += `B) ICMS destacado na origem:               R$ ${icmsOrigem.toFixed(2)}\n`;
+      resultado += `C) Alíquota Interna no AP:                 ${(aliqInt * 100).toFixed(2)}%\n`;
+      resultado += `D) Alíquota Interestadual:                 ${(aliqInter * 100).toFixed(2)}%\n\n`;
+
+      resultado += `E) Base de Cálculo Ajustada ([(A - B)/(1 - C)]): R$ ${baseICMS.toFixed(2)}\n`;
+      resultado += `F) ICMS destino (E × C):                        R$ ${icmsInterno.toFixed(2)}\n`;
+      resultado += `G) ICMS interestadual (A × D):                 R$ ${icmsInter.toFixed(2)}\n`;
+      resultado += `H) DIFAL A RECOLHER (F - G):                   R$ ${difal.toFixed(2)}\n\n`;
+
+      resultado += `Expressão Literal Final:\n`;
+      resultado += `DIFAL = [(A - B) / (1 - C)] × C - (A × D)\n\n`;
+
+      resultado += `Fundamento legal: RICMS/AP, Anexo I, Art. 25 - Memorando nº 045/COTRI/SRE.\n`;
+
+      document.getElementById('resultado').innerHTML =
+        '<img class="formula" src="fbe8bffa-78a9-4225-a1b8-e1bf0a382c75.png" alt="Fórmula DIFAL"><br>' + resultado;
     }
   </script>
 </body>
