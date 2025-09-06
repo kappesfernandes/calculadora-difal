@@ -1,169 +1,212 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculadora DIFAL - Amapá</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora – Diferencial de Alíquotas (Contribuinte Inscrito)</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 40px auto;
-      background-color: #f2f2f2;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    h2, h3 {
-      text-align: center;
-      color: #014421;
-    }
-    .bandeira {
-      display: block;
-      margin: 0 auto 20px auto;
-      width: 120px;
-    }
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 12px;
-      margin-top: 20px;
-      width: 100%;
-      background-color: #014421;
-      color: white;
-      font-weight: bold;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #026c32;
-    }
-    pre {
-      background: #fff;
-      padding: 10px;
-      margin-top: 20px;
-      white-space: pre-wrap;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .formula {
-      display: block;
-      margin: 0 auto 20px auto;
-      max-width: 100%;
+    :root{ --azul:#0C4A6E; --amarelo:#F4B000; --cinza:#f7f7f8; --borda:#1e3a5f33; --erro:#b00020; --ok:#0f766e; }
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#ffffff;color:#0f172a;font-size:14px}
+    .wrap{max-width:800px;margin:20px auto;padding:8px 14px}
+    .card{border:4px solid var(--azul);border-radius:10px;padding:16px 16px 20px;box-shadow:0 6px 12px rgba(2,8,23,.06)}
+    .flag{display:block;margin:0 auto 12px;width:150px;height:auto}
+    h1{font-size:18px;margin:0 0 4px;text-align:center;font-weight:700;letter-spacing:.1px}
+    .sub{color:#b45309;text-align:center;margin:0 0 14px;font-size:12px;font-weight:600}
+    .grid{display:grid;gap:10px;max-width:560px;margin:0 auto 10px}
+    label{font-weight:700;display:flex;align-items:center;gap:6px;font-size:13px}
+    .info{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--amarelo);color:#111;font-size:12px;line-height:1}
+    .hint{font-size:11px;color:#475569;margin-top:4px}
+    .input{position:relative}
+    .input input, .input select{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;font-size:13px;background:white;transition:border-color .2s, box-shadow .2s}
+    .input input:focus, .input select:focus{outline:none;border-color:#0ea5e9;box-shadow:0 0 0 2px rgba(14,165,233,.25)}
+    .input .prefix{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#64748b;font-weight:700;font-size:12px}
+    .input input.padL{padding-left:28px}
+    .actions{display:flex;gap:8px;justify-content:center;margin:8px 0 6px}
+    button{border:0;border-radius:8px;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer}
+    .btn{background:var(--amarelo)}
+    .btn-outline{background:white;border:1px solid #cbd5e1}
+    .results{display:grid;gap:8px;grid-template-columns:1fr;max-width:480px;margin:12px auto 6px}
+    .box{background:#fff;border:1px dashed var(--borda);border-radius:8px;padding:10px}
+    .box h3{margin:0 0 4px;font-size:13px;color:#334155;font-weight:700}
+    .valor{font-size:18px;font-weight:800}
+    .demo{margin:14px auto 0;max-width:720px;background:#fafafa;border:1px solid #e2e8f0;border-radius:8px;padding:10px}
+    .demo h4{margin:0 0 6px;text-align:center;color:#b91c1c;font-size:13px}
+    .f{font-family:"SFMono-Regular",Consolas,Menlo,monospace;font-size:12px;line-height:1.4}
+    .footer-note{margin-top:6px;text-align:center;color:#64748b;font-size:11px}
+    .warn{display:none;margin:6px auto 0;max-width:480px;color:#b00020;font-weight:700;text-align:center;font-size:12px}
+    .ok{display:none;margin:6px auto 0;max-width:480px;color:#0f766e;font-weight:700;text-align:center;font-size:12px}
+    .checkline{display:flex;align-items:center;gap:6px;margin-top:4px;font-weight:600;font-size:12px}
+    .checkline input[type="checkbox"]{margin:0}
+    .print-only{ display:none }
+    @media print{
+      body{background:#fff;font-size:12px}
+      .card{border:0;box-shadow:none;padding:0}
+      .actions,.no-print{ display:none !important }
+      .print-only{ display:block !important }
+      .results .box{border:1px solid #999}
     }
   </style>
 </head>
 <body>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Bandeira_do_Amap%C3%A1.svg" alt="Bandeira do Amapá" class="bandeira">
-  <h2>Calculadora DIFAL - ICMS (Amapá)</h2>
+  <div class="wrap">
+    <div class="card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Bandeira_do_Amap%C3%A1.svg/512px-Bandeira_do_Amap%C3%A1.svg.png" alt="Bandeira do Amapá" class="flag" />
+      <h1>Diferencial de Alíquotas – Destinatário Contribuinte</h1>
+      <p class="sub">*Cálculo <strong>NÃO SE APLICA</strong> às operações com redução de Base de Cálculo.</p>
 
-  <label>Total da Nota (R$):</label>
-  <input type="number" step="0.01" id="total_nota" placeholder="Ex: 2000.00">
+      <div class="grid">
+        <div>
+          <label>UF de origem (destino: AP)</label>
+          <div class="input">
+            <select id="ufOrigem">
+              <option value="AC">AC</option><option value="AL">AL</option><option value="AM">AM</option><option value="AP">AP</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MG">MG</option><option value="MS">MS</option><option value="MT">MT</option><option value="PA" selected>PA</option><option value="PB">PB</option><option value="PE">PE</option><option value="PI">PI</option><option value="PR">PR</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RO">RO</option><option value="RR">RR</option><option value="RS">RS</option><option value="SC">SC</option><option value="SE">SE</option><option value="SP">SP</option><option value="TO">TO</option>
+            </select>
+          </div>
+          <div class="checkline">
+            <input type="checkbox" id="aliq4" />
+            <label for="aliq4">Mercadoria importada (Res. 13/2012) — usar 4%</label>
+          </div>
+        </div>
+        <div>
+          <label>Valor de operação de origem</label>
+          <div class="input"><span class="prefix">R$</span>
+            <input id="valorOperacao" class="padL" inputmode="decimal" placeholder="0,00" autocomplete="off" />
+          </div>
+        </div>
+        <div>
+          <label>Valor do frete FOB CT-e</label>
+          <div class="input"><span class="prefix">R$</span>
+            <input id="frete" class="padL" inputmode="decimal" placeholder="0,00" autocomplete="off" />
+          </div>
+          <div class="hint">Se não houver, deixe em branco ou 0,00.</div>
+        </div>
+        <div>
+          <label>Alíquota Interna no Amapá (%)</label>
+          <div class="input">
+            <select id="aliqInterna">
+              <option value="0.29">29%</option>
+              <option value="0.25">25%</option>
+              <option value="0.18" selected>18%</option>
+              <option value="0.17">17%</option>
+              <option value="0.12">12%</option>
+              <option value="0.04">4%</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-  <label>ICMS Origem (R$):</label>
-  <input type="number" step="0.01" id="icms_origem" placeholder="Ex: 200.00">
+      <div class="actions">
+        <button class="btn" id="calcular">Calcular</button>
+        <button class="btn-outline" id="limpar">Limpar</button>
+        <button class="btn" id="gerarPdf">Gerar PDF</button>
+      </div>
 
-  <label>Alíquota Interna no Amapá (%):</label>
-  <select id="aliq_interna">
-    <option value="0.29">29%</option>
-    <option value="0.25">25%</option>
-    <option value="0.18" selected>18%</option>
-    <option value="0.17">17%</option>
-    <option value="0.12">12%</option>
-	<option value="0.04">4%</option>
-  </select>
+      <div id="warn" class="warn"></div>
+      <div id="ok" class="ok">Cálculo realizado.</div>
 
-  <label>Estado de Origem:</label>
-  <select id="estado_origem">
-    <option value="AC">Acre (AC)</option>
-    <option value="AL">Alagoas (AL)</option>
-    <option value="AP">Amapá (AP)</option>
-    <option value="AM">Amazonas (AM)</option>
-    <option value="BA">Bahia (BA)</option>
-    <option value="CE">Ceará (CE)</option>
-    <option value="DF">Distrito Federal (DF)</option>
-    <option value="ES">Espírito Santo (ES)</option>
-    <option value="GO">Goiás (GO)</option>
-    <option value="MA">Maranhão (MA)</option>
-    <option value="MT">Mato Grosso (MT)</option>
-    <option value="MS">Mato Grosso do Sul (MS)</option>
-    <option value="MG">Minas Gerais (MG)</option>
-    <option value="PA">Pará (PA)</option>
-    <option value="PB">Paraíba (PB)</option>
-    <option value="PR">Paraná (PR)</option>
-    <option value="PE">Pernambuco (PE)</option>
-    <option value="PI">Piauí (PI)</option>
-    <option value="RJ">Rio de Janeiro (RJ)</option>
-    <option value="RN">Rio Grande do Norte (RN)</option>
-    <option value="RS">Rio Grande do Sul (RS)</option>
-    <option value="RO">Rondônia (RO)</option>
-    <option value="RR">Roraima (RR)</option>
-    <option value="SC">Santa Catarina (SC)</option>
-    <option value="SP">São Paulo (SP)</option>
-    <option value="SE">Sergipe (SE)</option>
-    <option value="TO">Tocantins (TO)</option>
-  </select>
+      <div class="results">
+        <div class="box">
+          <h3>Diferencial de Alíquota</h3>
+          <div class="valor" id="difAliquota">—</div>
+        </div>
+      </div>
 
-  <button onclick="calcular()">Calcular DIFAL</button>
+      <div class="demo" id="demo" style="display:none">
+        <h4>Demonstração Didática do Cálculo pela Fórmula</h4>
+        <div class="f" id="steps"></div>
+      </div>
 
-  <pre id="resultado"></pre>
+      <div id="resumo" class="print-only" style="margin-top:10px">
+        <h3 style="margin:0 0 4px;font-size:13px">Resumo do Cálculo</h3>
+        <div id="resumoConteudo" class="f"></div>
+      </div>
 
-  <script>
-    function calcular() {
-      const vOper = parseFloat(document.getElementById('total_nota').value);
-      const icmsOrigem = parseFloat(document.getElementById('icms_origem').value);
-      const aliqInt = parseFloat(document.getElementById('aliq_interna').value);
-      const estadoOrigem = document.getElementById('estado_origem').value;
-      const sulSudesteExcetoES = ['SP', 'RJ', 'MG', 'PR', 'SC', 'RS'];
-      const aliqInter = sulSudesteExcetoES.includes(estadoOrigem) ? 0.07 : 0.12;
+      
+    </div>
+  </div>
 
-      if (
-        isNaN(vOper) || vOper <= 0 ||
-        isNaN(icmsOrigem) || icmsOrigem < 0 ||
-        isNaN(aliqInt) || aliqInt <= 0
-      ) {
-        alert('⚠️ Preencha todos os campos com valores válidos acima de zero.');
-        return;
-      }
+<script>
+function parseBRL(v){if(!v) return 0; return parseFloat(v.replace(/\./g,'').replace(',','.'))||0;}
+function fmtBRL(n){return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});} 
+function fmtNum2(n){return n.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});}
+function fmtPct2(n){return (n*100).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2})+'%';}
+function fmtPct4(n){return n.toLocaleString('pt-BR',{minimumFractionDigits:4, maximumFractionDigits:4});}
+function arred2(n){return Math.round(n*100)/100;}
 
-      const baseICMS = (vOper - icmsOrigem) / (1 - aliqInt);
-      const icmsInterno = baseICMS * aliqInt;
-      const icmsInter = vOper * aliqInter;
-      const difal = icmsInterno - icmsInter;
+function aliqInterAplicada(){
+  const isImp = document.getElementById('aliq4').checked;
+  return isImp ? 0.04 : 0.07;
+}
 
-      let resultado = `*** MEMÓRIA DE CÁLCULO DO DIFAL ***\n\n`;
-      resultado += `Fórmula Aplicada:\n`;
-      resultado += `DIFAL = [(vOper - ICMS_Origem) / (1 - ALQ_Interna)] × ALQ_Interna - (vOper × ALQ_Interestadual)\n\n`;
+function montarSteps(ctx){
+  const demo = document.getElementById('demo');
+  const s = document.getElementById('steps');
+  demo.style.display='block';
+  const oneMinus = 1 - ctx.aInt;
+  s.innerHTML = ''+
+    '<div><strong>Fórmula:</strong></div>'+
+    '<div>DIFAL = ((V<sub>oper</sub> − ICMS<sub>origem</sub>) / (1 − ALQ<sub>interna</sub>) × ALQ<sub>interna</sub>) − (V<sub>oper</sub> × ALQ<sub>interestadual</sub>)</div>'+
+    '<br/>'+
+    '<div><strong>Substituição dos valores:</strong></div>'+
+    '<div>DIFAL = ((' + fmtNum2(ctx.vTotal) + ' − ' + fmtNum2(ctx.icmsOrigem) + ') / (1 − ' + fmtPct4(ctx.aInt) + ') × ' + fmtPct4(ctx.aInt) + ') − (' + fmtNum2(ctx.vTotal) + ' × ' + fmtPct4(ctx.aInter) + ')</div>'+
+    '<div>DIFAL = (' + fmtNum2(ctx.vTotal - ctx.icmsOrigem) + ' / ' + fmtPct4(oneMinus) + ') × ' + fmtPct4(ctx.aInt) + ' − (' + fmtNum2(ctx.icmsOrigem) + ')</div>'+
+    '<div>DIFAL = (' + fmtNum2(ctx.baseInterna) + ') × ' + fmtPct4(ctx.aInt) + ' − (' + fmtNum2(ctx.icmsOrigem) + ')</div>'+
+    '<div>DIFAL = ' + fmtNum2(ctx.icmsInterno) + ' − ' + fmtNum2(ctx.icmsOrigem) + '</div>'+
+    '<div><strong>DIFAL = ' + fmtNum2(arred2(ctx.diferencial)) + '</strong></div>';
+}
 
-      resultado += `A) Valor da Operação (vOper):              R$ ${vOper.toFixed(2)}\n`;
-      resultado += `B) ICMS destacado na origem:               R$ ${icmsOrigem.toFixed(2)}\n`;
-      resultado += `C) Alíquota Interna no AP:                 ${(aliqInt * 100).toFixed(2)}%\n`;
-      resultado += `D) Alíquota Interestadual:                 ${(aliqInter * 100).toFixed(2)}%\n\n`;
+function preencherResumo(ctx){
+  const el = document.getElementById('resumoConteudo');
+  el.innerHTML = 'Data/Hora: ' + new Date().toLocaleString('pt-BR') + '<br>' +
+    'UF origem: ' + document.getElementById('ufOrigem').value + ' | Importada: ' + (document.getElementById('aliq4').checked? 'Sim':'Não') + '<br>' +
+    'Valor operação: ' + fmtBRL(ctx.vOper) + ' | Frete FOB: ' + fmtBRL(ctx.frete) + '<br>' +
+    'Alíquota interna (AP): ' + fmtPct2(ctx.aInt) + ' | Alíquota interestadual aplicada: ' + fmtPct2(ctx.aInter) + '<br>' +
+    '<strong>DIFAL:</strong> ' + fmtBRL(arred2(ctx.diferencial));
+}
 
-      resultado += `E) Base de Cálculo Ajustada ([(A - B)/(1 - C)]): R$ ${baseICMS.toFixed(2)}\n`;
-      resultado += `F) ICMS destino (E × C):                        R$ ${icmsInterno.toFixed(2)}\n`;
-      resultado += `G) ICMS interestadual (A × D):                 R$ ${icmsInter.toFixed(2)}\n`;
-      resultado += `H) DIFAL A RECOLHER (F - G):                   R$ ${difal.toFixed(2)}\n\n`;
+let ultimoCtx = null;
+function calcular(){
+  const vOper = parseBRL(document.getElementById('valorOperacao').value);
+  const frete = parseBRL(document.getElementById('frete').value);
+  const aInt = parseFloat(document.getElementById('aliqInterna').value);
+  const aInter = aliqInterAplicada();
+  if(vOper<=0){alert('Informe o valor da operação');return;}
+  if(aInt<=0){alert('Selecione a alíquota interna');return;}
+  if(aInter<=0){alert('Confira a alíquota interestadual');return;}
+  const vTotal = vOper+frete;
+  const icmsOrigem = arred2(vTotal*aInter);
+  const baseInternaBruta = vTotal-icmsOrigem;
+  const baseInterna = baseInternaBruta/(1-aInt);
+  const icmsInterno = baseInterna*aInt;
+  const diferencial = icmsInterno-icmsOrigem;
+  document.getElementById('difAliquota').textContent=fmtBRL(arred2(diferencial));
+  document.getElementById('ok').style.display='block';
+  const ctx = {vOper, frete, vTotal, icmsOrigem, aInt, aInter, baseInternaBruta, baseInterna, icmsInterno, diferencial};
+  ultimoCtx = ctx;
+  montarSteps(ctx);
+  preencherResumo(ctx);
+}
 
-      resultado += `Expressão Literal Final:\n`;
-      resultado += `DIFAL = [(A - B) / (1 - C)] × C - (A × D)\n\n`;
+function limpar(){
+  ['valorOperacao','frete'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('aliqInterna').value='0.18';
+  document.getElementById('ufOrigem').value='PA';
+  document.getElementById('aliq4').checked=false;
+  document.getElementById('difAliquota').textContent='—';
+  document.getElementById('demo').style.display='none';
+  document.getElementById('ok').style.display='none';
+}
 
-      resultado += `Fundamento legal: RICMS/AP, Anexo I, Art. 25 - Memorando nº 045/COTRI/SRE.\n`;
+function gerarPdf(){
+  if(!ultimoCtx){
+    calcular();
+  }
+  window.print();
+}
 
-      document.getElementById('resultado').innerHTML =
-        '<img class="formula" src="fbe8bffa-78a9-4225-a1b8-e1bf0a382c75.png" alt="Fórmula DIFAL"><br>' + resultado;
-    }
-  </script>
+document.getElementById('calcular').addEventListener('click',calcular);
+document.getElementById('limpar').addEventListener('click',limpar);
+document.getElementById('gerarPdf').addEventListener('click',gerarPdf);
+</script>
 </body>
 </html>
-"" 
