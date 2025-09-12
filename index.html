@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calculadora – Diferencial de Alíquotas (Contribuinte Inscrito)</title>
+  <title>Calculadora – Diferencial de Alíquotas (Destinatário Contribuinte)</title>
   <style>
     :root{ --azul:#0C4A6E; --amarelo:#F4B000; --cinza:#f7f7f8; --borda:#1e3a5f33; --erro:#b00020; --ok:#0f766e; }
     body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#ffffff;color:#0f172a;font-size:14px}
@@ -32,7 +32,6 @@
     .demo{margin:14px auto 0;max-width:720px;background:#fafafa;border:1px solid #e2e8f0;border-radius:8px;padding:10px}
     .demo h4{margin:0 0 6px;text-align:center;color:#b91c1c;font-size:13px}
     .f{font-family:"SFMono-Regular",Consolas,Menlo,monospace;font-size:12px;line-height:1.4}
-    .footer-note{margin-top:6px;text-align:center;color:#64748b;font-size:11px}
     .warn{display:none;margin:6px auto 0;max-width:480px;color:#b00020;font-weight:700;text-align:center;font-size:12px}
     .ok{display:none;margin:6px auto 0;max-width:480px;color:#0f766e;font-weight:700;text-align:center;font-size:12px}
     .checkline{display:flex;align-items:center;gap:6px;margin-top:4px;font-weight:600;font-size:12px}
@@ -120,8 +119,6 @@
         <h3 style="margin:0 0 4px;font-size:13px">Resumo do Cálculo</h3>
         <div id="resumoConteudo" class="f"></div>
       </div>
-
-      
     </div>
   </div>
 
@@ -135,7 +132,14 @@ function arred2(n){return Math.round(n*100)/100;}
 
 function aliqInterAplicada(){
   const isImp = document.getElementById('aliq4').checked;
-  return isImp ? 0.04 : 0.07;
+  if(isImp) return 0.04;
+  const uf = document.getElementById('ufOrigem').value;
+  const regioesSulSudeste = ["SP","RJ","MG","ES","PR","SC","RS"];
+  if(regioesSulSudeste.includes(uf)){
+    return 0.07;
+  } else {
+    return 0.12;
+  }
 }
 
 function montarSteps(ctx){
