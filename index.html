@@ -130,16 +130,13 @@ function fmtPct2(n){return (n*100).toLocaleString('pt-BR',{minimumFractionDigits
 function fmtPct4(n){return n.toLocaleString('pt-BR',{minimumFractionDigits:4, maximumFractionDigits:4});}
 function arred2(n){return Math.round(n*100)/100;}
 
+// Alíquota interestadual para destino AP (Norte)
 function aliqInterAplicada(){
   const isImp = document.getElementById('aliq4').checked;
-  if(isImp) return 0.04;
+  if(isImp) return 0.04; // importada sempre 4%
   const uf = document.getElementById('ufOrigem').value;
-  const regioesSulSudeste7 = ["SP","RJ","MG","PR","SC","RS"];
-  if(regioesSulSudeste.includes(uf)){
-    return 0.07;
-  } else {
-    return 0.12;
-  }
+  const ufs7 = ["SP","RJ","MG","PR","SC","RS"]; // ES removido: ES->AP é 12%
+  return ufs7.includes(uf) ? 0.07 : 0.12;
 }
 
 function montarSteps(ctx){
@@ -161,6 +158,7 @@ function montarSteps(ctx){
 
 function preencherResumo(ctx){
   const el = document.getElementById('resumoConteudo');
+  if(!el) return;
   el.innerHTML = 'Data/Hora: ' + new Date().toLocaleString('pt-BR') + '<br>' +
     'UF origem: ' + document.getElementById('ufOrigem').value + ' | Importada: ' + (document.getElementById('aliq4').checked? 'Sim':'Não') + '<br>' +
     'Valor operação: ' + fmtBRL(ctx.vOper) + ' | Frete FOB: ' + fmtBRL(ctx.frete) + '<br>' +
@@ -170,25 +168,31 @@ function preencherResumo(ctx){
 
 let ultimoCtx = null;
 function calcular(){
-  const vOper = parseBRL(document.getElementById('valorOperacao').value);
-  const frete = parseBRL(document.getElementById('frete').value);
-  const aInt = parseFloat(document.getElementById('aliqInterna').value);
-  const aInter = aliqInterAplicada();
-  if(vOper<=0){alert('Informe o valor da operação');return;}
-  if(aInt<=0){alert('Selecione a alíquota interna');return;}
-  if(aInter<=0){alert('Confira a alíquota interestadual');return;}
-  const vTotal = vOper+frete;
-  const icmsOrigem = arred2(vTotal*aInter);
-  const baseInternaBruta = vTotal-icmsOrigem;
-  const baseInterna = baseInternaBruta/(1-aInt);
-  const icmsInterno = baseInterna*aInt;
-  const diferencial = icmsInterno-icmsOrigem;
-  document.getElementById('difAliquota').textContent=fmtBRL(arred2(diferencial));
-  document.getElementById('ok').style.display='block';
-  const ctx = {vOper, frete, vTotal, icmsOrigem, aInt, aInter, baseInternaBruta, baseInterna, icmsInterno, diferencial};
-  ultimoCtx = ctx;
-  montarSteps(ctx);
-  preencherResumo(ctx);
+  try{
+    const vOper = parseBRL(document.getElementById('valorOperacao').value);
+    const frete = parseBRL(document.getElementById('frete').value);
+    const aInt = parseFloat(document.getElementById('aliqInterna').value);
+    const aInter = aliqInterAplicada();
+
+    if(vOper<=0){alert('Informe o valor da operação');return;}
+    if(aInt<=0){alert('Selecione a alíquota interna');return;}
+    if(aInter<=0){alert('Confira a alíquota interestadual');return;}
+
+    const vTotal = vOper+frete;
+    const icmsOrigem = arred2(vTotal*aInter); // ICMS na origem (interestadual)
+    const baseInternaBruta = vTotal-icmsOrigem;
+    const baseInterna = baseInternaBruta/(1-aInt);
+    const icmsInterno = baseInterna*aInt;
+    const diferencial = icmsInterno-icmsOrigem;
+
+    document.getElementById('difAliquota').textContent=fmtBRL(arred2(diferencial));
+    document.getElementById('ok').style.display='block';
+
+    const ctx = {vOper, frete, vTotal, icmsOrigem, aInt, aInter, baseInternaBruta, baseInterna, icmsInterno, diferencial};
+    ultimoCtx = ctx;
+    montarSteps(ctx);
+    preencherResumo(ctx);
+  }catch(e){ console.error(e); alert('Erro no cálculo: '+ e.message); }
 }
 
 function limpar(){
@@ -197,14 +201,12 @@ function limpar(){
   document.getElementById('ufOrigem').value='PA';
   document.getElementById('aliq4').checked=false;
   document.getElementById('difAliquota').textContent='—';
-  document.getElementById('demo').style.display='none';
-  document.getElementById('ok').style.display='none';
+  const demo=document.getElementById('demo'); if(demo) demo.style.display='none';
+  const ok=document.getElementById('ok'); if(ok) ok.style.display='none';
 }
 
 function gerarPdf(){
-  if(!ultimoCtx){
-    calcular();
-  }
+  if(!ultimoCtx){ calcular(); }
   window.print();
 }
 
